@@ -2,31 +2,30 @@ const express = require('express');
 const session = require('express-session');
 const redis = require('redis');
 const connectRedis = require('connect-redis');
-var bodyParser = require('body-parser');
-var ip = require("ip");
+const bodyParser = require('body-parser');
+const ip = require("ip");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('trust proxy', 1);
-const RedisStore = connectRedis(session)
+const RedisStore = connectRedis(session);
 
 const primary_endpoint = process.env.PRIMARY_ENDPOINT;
 
-// Configure the Redis client
 const redisClient = redis.createClient({
   host: primary_endpoint,
   port: 6379
-})
+});
 
 redisClient.on('error', function (err) {
   console.log('Could not establish a connection with Redis. ' + err);
 });
+
 redisClient.on('connect', function (err) {
   console.log('Connected to Redis successfully.');
 });
 
-// Configure session middleware
 app.use(session({
   store: new RedisStore({ client: redisClient }),
   secret: 'secret_educative_string',
@@ -35,9 +34,9 @@ app.use(session({
   cookie: {
       secure: false,
       httpOnly: false,
-      maxAge: 1000 * 60 * 10
+      maxAge: 10000 * 60 * 10
   }
-}))
+}));
 
 const PORT = process.env.PORT || 3000;
 
@@ -73,4 +72,4 @@ app.get('/clear_custom_session', (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log('Server listening at port 3000'));
+app.listen(PORT, () => console.log(`Server listening at port ${PORT}`));
