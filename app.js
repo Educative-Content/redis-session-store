@@ -13,16 +13,19 @@ const RedisStore = connectRedis(session);
 
 const primary_endpoint = process.env.PRIMARY_ENDPOINT;
 
-const redisClient = redis.createClient({
-  host: primary_endpoint,
-  port: 6379
-});
+const redisClient = redis.createClient(
+  6379,
+  primary_endpoint,
+  {
+    tls: {}
+  }
+);
 
 redisClient.on('error', function (err) {
   console.log('Could not establish a connection with Redis. ' + err);
 });
 
-redisClient.on('connect', function (err) {
+redisClient.on('connect', function () {
   console.log('Connected to Redis successfully.');
 });
 
@@ -32,9 +35,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-      secure: false,
-      httpOnly: false,
-      maxAge: 10000 * 60 * 10
+    secure: false,
+    httpOnly: false,
+    maxAge: 10000 * 60 * 10
   }
 }));
 
